@@ -23,7 +23,9 @@ int main()
         case 1:
             if(!flag)
             {
-                controller_loadFromText("data.csv",listaEmpleados);
+                if(controller_loadFromText("data.csv",listaEmpleados)==0){
+                    flag = 1;
+                }
             }
             else
             {

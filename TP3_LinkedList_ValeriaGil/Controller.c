@@ -87,8 +87,8 @@ int controller_loadFromText(char* path, LinkedList* pArrayListEmployee)
         {
             if(!parser_EmployeeFromText(pFile, pArrayListEmployee))
             {
-                printf("Carga exitosa.\n\n");
                 retorno = 0;
+                printf("\nCarga desde texto exitosa.\n\n");
             }
         }
         fclose(pFile);
@@ -106,42 +106,16 @@ int controller_loadFromText(char* path, LinkedList* pArrayListEmployee)
  */
 int controller_loadFromBinary(char* path, LinkedList* pArrayListEmployee)
 {
-    int retorno = -1;
-    FILE *pFile = NULL;
-    Employee auxEmpleado;
-    Employee* pEmpleado;
-    int lastIndex = 0;
-    if(path != NULL && pArrayListEmployee != NULL)
-    {
-        pFile = fopen(path, "r");
-        if(pFile != NULL)
-        {
-            while(!feof(pFile))
-            {
-                fread(&auxEmpleado,sizeof(Employee),1,pFile);
-                pEmpleado = employee_new();
-                if( !employee_setId(pEmpleado,auxEmpleado.id) &&
-                        !employee_setNombre(pEmpleado,auxEmpleado.nombre) &&
-                        !employee_setHorasTrabajadas(pEmpleado,auxEmpleado.horasTrabajadas) &&
-                        !employee_setSueldo(pEmpleado,auxEmpleado.sueldo))
-                {
-                    ll_add(pArrayListEmployee,pEmpleado);
-                    lastIndex++;
-                }
-                else
-                {
-                    employee_delete(pEmpleado);
-                }
-            }
-            retorno = 0;
-            ll_remove(pArrayListEmployee, lastIndex - 1);
-        }
-        fclose(pFile);
-    }
-    if(!retorno)
-    {
-        printf("Archivo cargado correctamente");
-    }
+    FILE *pFile;
+	int retorno = -1;
+	pFile = fopen(path, "rb");
+
+	if (pFile != NULL) {
+		parser_EmployeeFromBinary(pFile, pArrayListEmployee);
+		retorno = 0;
+		printf("\nCarga desde binario exitosa! \n\n");
+	}
+	fclose(pFile);
 
     return retorno;
 }
@@ -348,6 +322,7 @@ int controller_saveAsText(char* path, LinkedList* pArrayListEmployee)
     int id, sueldo, horas;
     char name[4096];
     int lengthArray;
+    int cabecera = 1;
 
     FILE *pFile = NULL;
     Employee* pAux = NULL;
@@ -365,6 +340,11 @@ int controller_saveAsText(char* path, LinkedList* pArrayListEmployee)
                         && !employee_getHorasTrabajadas(pAux, &horas)
                         && !employee_getNombre(pAux, name))
                 {
+                    if(cabecera)
+                    {
+                        fprintf(pFile,"%s,%s,%s,%s\n","ID","NOMBRE","HORAS","SUELDO");
+                        cabecera = 0;
+                    }
                     fprintf(pFile, "%d,%s,%d,%d\n", id,name,horas,sueldo);
                 }
                 else
@@ -398,22 +378,20 @@ int controller_saveAsBinary(char* path, LinkedList* pArrayListEmployee)
     FILE *pFile = NULL;
     if(path != NULL && pArrayListEmployee != NULL)
     {
-        pFile = fopen(path, "w");
+        pFile = fopen(path, "wb");
         if(pFile != NULL)
         {
             for(i=0; i<ll_len(pArrayListEmployee); i++)
             {
-                pEmployee = ll_get(pArrayListEmployee,i);
+                pEmployee = (Employee*)ll_get(pArrayListEmployee,i);
                 fwrite(pEmployee,sizeof(Employee),1,pFile);
             }
         }
         retorno = 0;
+        printf("Archivo guardado correctamente");
         fclose(pFile);
     }
-    if(!retorno)
-    {
-        printf("Archivo guardado correctamente");
-    }
+
     return retorno;
     return 1;
 }

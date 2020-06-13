@@ -13,28 +13,36 @@
 int parser_EmployeeFromText(FILE* pFile, LinkedList* pArrayListEmployee)
 {
     int retorno = -1;
-    int flag=0;
-    char bufferId[50];
-    char bufferName[128];
-    char bufferHoras[50];
-    char bufferSueldo[50];
+   Employee *pEmployee;
 
-    Employee* pEmployee;
-    while(!feof(pFile))
+	char id[50];
+	char nombre[50];
+	char horas[50];
+	char sueldo[50];
+
+	int cabecera = 1;
+
+	if (pFile != NULL)
     {
-        fscanf(pFile, "%[^,],%[^,],%[^,],%[^\n]\n", bufferId, bufferName, bufferHoras, bufferSueldo);
-        if(flag == 0)
+		while (!feof(pFile))
         {
-            flag++;
-            continue;
-        }
-        pEmployee = employee_newParametros(bufferId, bufferName, bufferHoras, bufferSueldo);
-        if(pEmployee != NULL)
-        {
-            ll_add(pArrayListEmployee, pEmployee);
-            retorno = 0;
-        }
-    }
+			if (cabecera)
+			{
+				fscanf(pFile, "%[^,],%[^,],%[^,],%[^\n]\n", id, nombre,
+						sueldo,horas);
+				cabecera = 0;
+			}
+			fscanf(pFile, "%[^,], %[^,], %[^,], %[^\n]\n", id, nombre,
+					sueldo,horas);
+			pEmployee = employee_newParametros(id, nombre, horas,sueldo);
+
+			if (pEmployee != NULL)
+            {
+				ll_add(pArrayListEmployee, pEmployee);
+				retorno = 0;
+			}
+		}
+	}
     return retorno;
 }
 
@@ -47,6 +55,17 @@ int parser_EmployeeFromText(FILE* pFile, LinkedList* pArrayListEmployee)
  */
 int parser_EmployeeFromBinary(FILE* pFile, LinkedList* pArrayListEmployee)
 {
+    Employee *pEmployee;
+	int retorno = -1;
 
-    return 1;
+	if (pFile != NULL) {	//mientras el archivo no sea nulo, entro al bucle
+		while (!feof(pFile)) {		// mientras no sea final de archivo, bucleo
+			pEmployee = employee_new(); // inicializo
+			if (fread(pEmployee, sizeof(Employee), 1, pFile) == 1) {
+				ll_add(pArrayListEmployee, pEmployee); // copio lo de pEmplo en el array
+			}
+		}
+		retorno = 0;
+	}
+    return retorno;
 }
